@@ -1,0 +1,12 @@
+cluster: yellow
+domain: lab.aymantech.net
+ctlplanes: 1
+workers: 1
+image: centos9stream
+numcpus: 2
+memory: 4096
+disk_size: 20
+network: vmbr0
+pool: local-lvm
+token: changeme
+sdn: flannel
