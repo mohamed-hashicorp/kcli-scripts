@@ -11,14 +11,17 @@ for yaml in "$@"; do
       echo "Error: file not found: $yaml"
       exit 1
     fi
+
     cluster=$(basename "$yaml" .yml)
-    if kcli list cluster -o name 2>/dev/null | grep -qx "${cluster#*-}"; then
+    export name="${cluster#*-}"
+    export type="${cluster%-*}"
+
+    if kcli list cluster -o name 2>/dev/null | grep -qx "${name}"; then
       echo "Skipping $cluster: cluster already exists"
       continue
     fi
     sleep 0.$RANDOM
-    kcli create cluster k3s --paramfile "$yaml"
-    export name="${cluster#*-}"
+    kcli create cluster ${type} --paramfile "$yaml"
     yq e '
       .contexts[0].name = env(name) |
       .contexts[0].context.cluster = env(name) |
@@ -26,8 +29,7 @@ for yaml in "$@"; do
       .clusters[0].name = env(name) |
       .users[0].name = env(name) |
       .current-context = env(name)
-    ' -i ~/.kcli/clusters/"${cluster#*-}"/auth/kubeconfig  
-    #kubectl config get-contexts --kubeconfig=~/.kcli/clusters/"${cluster#*-}"/auth/kubeconfig
+    ' -i ~/.kcli/clusters/"${name}"/auth/kubeconfig  
   } 
 done
 
